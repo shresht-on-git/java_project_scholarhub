@@ -51,7 +51,13 @@ public class StudentController {
                 s.getFullName(),
                 s.getEmail(),
                 s.getBranch(),
-                s.getSemester()
+                s.getSemester(),
+                s.getProfilePhoto(),
+                s.getPhoneNumber(),
+                s.getBio(),
+                s.getSkills(),
+                s.getGithubUrl(),
+                s.getLinkedinUrl()
         );
     }
 }

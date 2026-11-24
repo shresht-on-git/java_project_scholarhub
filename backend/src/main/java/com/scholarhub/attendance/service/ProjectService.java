@@ -269,6 +269,34 @@ public class ProjectService {
     }
 
     @Transactional
+    public ProjectResponse endProject(Long projectId, Long currentUserId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+
+        // Strict Role Check: ONLY the Team Lead can end the project
+        if (!project.getTeamLead().getId().equals(currentUserId)) {
+            throw new ForbiddenException("Only the Team Lead has permission to end this project.");
+        }
+
+        if ("ENDED".equalsIgnoreCase(project.getStatus())) {
+            throw new BadRequestException("This project has already been ended.");
+        }
+
+        project.setStatus("ENDED");
+        project.setEndedAt(LocalDateTime.now());
+        Project saved = projectRepository.save(project);
+
+        // Push notification to ALL accepted team members
+        notificationService.notifyAllAcceptedMembers(
+                saved,
+                "Project '" + saved.getTitle() + "' has been officially ended by Team Lead " + project.getTeamLead().getFullName() + ".",
+                NotificationType.PROJECT_ENDED
+        );
+
+        return mapToProjectResponse(saved, currentUserId);
+    }
+
+    @Transactional
     public SubtaskDto addSubtask(Long projectId, Long memberId, CreateSubtaskRequest request, Long currentUserId) {
         ProjectMember member = projectMemberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project member not found with id: " + memberId));
@@ -422,6 +450,8 @@ public class ProjectService {
                 .map(this::mapToMemberDto)
                 .collect(Collectors.toList());
 
+        boolean isEnded = "ENDED".equalsIgnoreCase(project.getStatus());
+
         return new ProjectResponse(
                 project.getId(),
                 project.getTitle(),
@@ -436,7 +466,10 @@ public class ProjectService {
                 isLead,
                 currentStatus,
                 currentRole,
-                memberDtos
+                memberDtos,
+                project.getStatus() != null ? project.getStatus() : "ACTIVE",
+                isEnded,
+                project.getEndedAt()
         );
     }
 
@@ -459,7 +492,8 @@ public class ProjectService {
                 member.getOverallTaskDeadline(),
                 member.isOverallTaskCompleted(),
                 member.getJoinedAt(),
-                subtaskDtos
+                subtaskDtos,
+                member.getUser().getProfilePhoto()
         );
     }
 

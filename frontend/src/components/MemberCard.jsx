@@ -60,18 +60,22 @@ export default function MemberCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm shadow-2xs ${
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm shadow-2xs overflow-hidden shrink-0 ${
                 member.role === 'TEAM_LEAD'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-100 text-slate-700 border border-slate-200'
               }`}
             >
-              {member.fullName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()}
+              {member.profilePhoto ? (
+                <img src={member.profilePhoto} alt={member.fullName} className="w-full h-full object-cover" />
+              ) : (
+                member.fullName
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">

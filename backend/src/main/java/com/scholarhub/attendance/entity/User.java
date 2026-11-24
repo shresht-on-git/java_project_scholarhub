@@ -32,6 +32,24 @@ public class User {
     @Column(name = "semester", nullable = false)
     private int semester;
 
+    @Column(name = "profile_photo", columnDefinition = "LONGTEXT")
+    private String profilePhoto;
+
+    @Column(name = "phone_number", length = 50)
+    private String phoneNumber;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "skills", columnDefinition = "TEXT")
+    private String skills;
+
+    @Column(name = "github_url")
+    private String githubUrl;
+
+    @Column(name = "linkedin_url")
+    private String linkedinUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -64,6 +82,12 @@ public class User {
         private String password;
         private String branch;
         private int semester;
+        private String profilePhoto;
+        private String phoneNumber;
+        private String bio;
+        private String skills;
+        private String githubUrl;
+        private String linkedinUrl;
 
         public Builder id(Long id) { this.id = id; return this; }
         public Builder rollNumber(String rollNumber) { this.rollNumber = rollNumber; return this; }
@@ -72,9 +96,22 @@ public class User {
         public Builder password(String password) { this.password = password; return this; }
         public Builder branch(String branch) { this.branch = branch; return this; }
         public Builder semester(int semester) { this.semester = semester; return this; }
+        public Builder profilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; return this; }
+        public Builder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
+        public Builder bio(String bio) { this.bio = bio; return this; }
+        public Builder skills(String skills) { this.skills = skills; return this; }
+        public Builder githubUrl(String githubUrl) { this.githubUrl = githubUrl; return this; }
+        public Builder linkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; return this; }
 
         public User build() {
-            return new User(id, rollNumber, fullName, email, password, branch, semester);
+            User user = new User(id, rollNumber, fullName, email, password, branch, semester);
+            user.setProfilePhoto(profilePhoto);
+            user.setPhoneNumber(phoneNumber);
+            user.setBio(bio);
+            user.setSkills(skills);
+            user.setGithubUrl(githubUrl);
+            user.setLinkedinUrl(linkedinUrl);
+            return user;
         }
     }
 
@@ -98,6 +135,24 @@ public class User {
 
     public int getSemester() { return semester; }
     public void setSemester(int semester) { this.semester = semester; }
+
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public String getSkills() { return skills; }
+    public void setSkills(String skills) { this.skills = skills; }
+
+    public String getGithubUrl() { return githubUrl; }
+    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
+
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

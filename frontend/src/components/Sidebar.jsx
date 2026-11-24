@@ -1,13 +1,10 @@
 import React from 'react';
 import {
   GraduationCap,
-  LayoutDashboard,
   CalendarCheck2,
-  ListTodo,
   FolderKanban,
-  Calendar,
   Bell,
-  Settings,
+  UserCircle,
   X,
   LogOut,
   Sparkles
@@ -28,9 +25,9 @@ export default function Sidebar({
   const studentRoll = currentStudent?.rollNumber || '';
   const studentBranch = currentStudent?.branch || '';
   const studentSem = currentStudent?.semester || 1;
+  const profilePhoto = currentStudent?.profilePhoto || null;
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     {
       id: 'attendance',
       label: 'Attendance',
@@ -43,9 +40,7 @@ export default function Sidebar({
           ? 'neutral'
           : 'danger',
     },
-    { id: 'tasks', label: 'Tasks', icon: ListTodo, badge: '4', badgeType: 'neutral' },
     { id: 'projects', label: 'Projects', icon: FolderKanban },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
     {
       id: 'notifications',
       label: 'Notifications',
@@ -53,7 +48,7 @@ export default function Sidebar({
       badge: unreadNotificationCount > 0 ? String(unreadNotificationCount) : null,
       badgeType: 'alert',
     },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'profile', label: 'My Profile', icon: UserCircle },
   ];
 
   return (
@@ -164,14 +159,25 @@ export default function Sidebar({
         {/* Student Profile Footer with Logout */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                {studentName
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()}
+            <button
+              onClick={() => {
+                setActiveTab('profile');
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-85 transition-opacity flex-1 mr-2"
+              title="View and edit My Profile"
+            >
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                {profilePhoto ? (
+                  <img src={profilePhoto} alt={studentName} className="w-full h-full object-cover" />
+                ) : (
+                  studentName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-slate-900 truncate">{studentName}</p>
@@ -182,7 +188,7 @@ export default function Sidebar({
                   {studentRoll} • Sem {studentSem}
                 </p>
               </div>
-            </div>
+            </button>
 
             {onLogout && (
               <button

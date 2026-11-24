@@ -21,6 +21,9 @@ public class ProjectResponse {
     private MemberStatus currentUserStatus;
     private ProjectRole currentUserRole;
     private List<ProjectMemberDto> members;
+    private String status = "ACTIVE";
+    private boolean ended;
+    private LocalDateTime endedAt;
 
     public ProjectResponse() {}
 
@@ -28,6 +31,16 @@ public class ProjectResponse {
                            String teamLeadName, String teamLeadRoll, LocalDateTime createdAt,
                            long acceptedMembersCount, long pendingMembersCount, boolean isCurrentUserLead,
                            MemberStatus currentUserStatus, ProjectRole currentUserRole, List<ProjectMemberDto> members) {
+        this(id, title, description, teamSize, teamLeadId, teamLeadName, teamLeadRoll, createdAt,
+                acceptedMembersCount, pendingMembersCount, isCurrentUserLead, currentUserStatus, currentUserRole, members,
+                "ACTIVE", false, null);
+    }
+
+    public ProjectResponse(Long id, String title, String description, int teamSize, Long teamLeadId,
+                           String teamLeadName, String teamLeadRoll, LocalDateTime createdAt,
+                           long acceptedMembersCount, long pendingMembersCount, boolean isCurrentUserLead,
+                           MemberStatus currentUserStatus, ProjectRole currentUserRole, List<ProjectMemberDto> members,
+                           String status, boolean ended, LocalDateTime endedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -42,6 +55,9 @@ public class ProjectResponse {
         this.currentUserStatus = currentUserStatus;
         this.currentUserRole = currentUserRole;
         this.members = members;
+        this.status = status != null ? status : "ACTIVE";
+        this.ended = ended;
+        this.endedAt = endedAt;
     }
 
     public Long getId() { return id; }
@@ -85,4 +101,13 @@ public class ProjectResponse {
 
     public List<ProjectMemberDto> getMembers() { return members; }
     public void setMembers(List<ProjectMemberDto> members) { this.members = members; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public boolean isEnded() { return ended; }
+    public void setEnded(boolean ended) { this.ended = ended; }
+
+    public LocalDateTime getEndedAt() { return endedAt; }
+    public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
 }

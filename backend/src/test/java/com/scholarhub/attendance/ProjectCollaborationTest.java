@@ -301,4 +301,37 @@ class ProjectCollaborationTest {
         assertTrue(refreshed.isOverdueNotified(), "Subtask must be marked as overdueNotified");
         assertTrue(notificationRepository.count() > initialNotifCount, "Notifications should be generated");
     }
+
+    @Test
+    @DisplayName("Only Team Lead can end project; non-lead receives 403 Forbidden")
+    void testEndProjectByTeamLead() {
+        List<User> users = userRepository.findAll();
+        User lead = users.get(0);
+        User member = users.get(1);
+
+        CreateProjectRequest req = new CreateProjectRequest();
+        req.setTitle("Autonomous Drone Navigation");
+        req.setDescription("SLAM algorithm implementation");
+        req.setTeamSize(3);
+
+        ProjectResponse project = projectService.createProject(req, lead.getId());
+        projectService.inviteMember(project.getId(), member.getId(), lead.getId());
+        projectService.acceptInvitation(project.getId(), member.getId());
+
+        // Member cannot end project -> 403 Forbidden
+        assertThrows(ForbiddenException.class, () ->
+                projectService.endProject(project.getId(), member.getId())
+        );
+
+        // Team Lead ends project -> Success
+        ProjectResponse ended = projectService.endProject(project.getId(), lead.getId());
+        assertEquals("ENDED", ended.getStatus());
+        assertTrue(ended.isEnded());
+        assertNotNull(ended.getEndedAt());
+
+        // Attempting to end again throws BadRequestException
+        assertThrows(BadRequestException.class, () ->
+                projectService.endProject(project.getId(), lead.getId())
+        );
+    }
 }

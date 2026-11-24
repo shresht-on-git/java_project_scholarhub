@@ -72,6 +72,14 @@ public class ProjectController {
         return ResponseEntity.ok(Map.of("success", true, "message", "Invitation rejected."));
     }
 
+    @PostMapping("/{id}/end")
+    public ResponseEntity<ProjectResponse> endProject(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long currentUserId) {
+        ProjectResponse response = projectService.endProject(id, currentUserId);
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/{id}/members/{memberId}/task")
     public ResponseEntity<ProjectMemberDto> updateOverallTask(
             @PathVariable Long id,

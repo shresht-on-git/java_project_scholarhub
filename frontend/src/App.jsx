@@ -8,6 +8,7 @@ import MarkAttendanceModal from './components/MarkAttendanceModal';
 import PlaceholderView from './components/PlaceholderView';
 import ProjectsView from './components/ProjectsView';
 import NotificationsView from './components/NotificationsView';
+import ProfileView from './components/ProfileView';
 import LoginView from './components/LoginView';
 import Toast from './components/Toast';
 import { attendanceApi, notificationApi, userApi, authApi } from './api/axios';
@@ -146,6 +147,12 @@ export default function App() {
     showToast('You have been signed out successfully.', 'info', 'Signed Out');
   };
 
+  // Handle Profile Update
+  const handleProfileUpdated = (updatedUser) => {
+    setCurrentStudent(updatedUser);
+    localStorage.setItem('scholarhub_user', JSON.stringify(updatedUser));
+  };
+
   // Subject Actions
   const handleOpenAddSubject = () => {
     setSubjectToEdit(null);
@@ -245,6 +252,7 @@ export default function App() {
           loading={loading}
           setMobileOpen={setMobileOpen}
           backendConnected={backendConnected}
+          onNavigateProfile={() => setActiveTab('profile')}
         />
 
         <main className="p-6 md:p-8 space-y-6 max-w-7xl w-full mx-auto flex-1">
@@ -315,10 +323,20 @@ export default function App() {
             />
           )}
 
-          {/* Other Tabs */}
+          {/* TAB 4: My Profile Section */}
+          {activeTab === 'profile' && (
+            <ProfileView
+              currentStudent={currentStudent}
+              onProfileUpdated={handleProfileUpdated}
+              showToast={showToast}
+            />
+          )}
+
+          {/* Other Tabs (Fallback) */}
           {activeTab !== 'attendance' &&
             activeTab !== 'projects' &&
-            activeTab !== 'notifications' && (
+            activeTab !== 'notifications' &&
+            activeTab !== 'profile' && (
               <PlaceholderView
                 tabId={activeTab}
                 onGoToAttendance={() => setActiveTab('attendance')}

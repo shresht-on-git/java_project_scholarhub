@@ -12,7 +12,8 @@ import {
   Calendar,
   AlertCircle,
   Inbox,
-  RefreshCw
+  RefreshCw,
+  Flag
 } from 'lucide-react';
 import { projectApi } from '../api/axios';
 import MemberCard from './MemberCard';
@@ -45,6 +46,10 @@ export default function ProjectsView({ currentUserId, showToast }) {
   // Overall Task Reconfirmation
   const [confirmOverallTaskMember, setConfirmOverallTaskMember] = useState(null);
   const [overallTaskCompletingLoading, setOverallTaskCompletingLoading] = useState(false);
+
+  // End Project Modal State
+  const [isEndProjectModalOpen, setIsEndProjectModalOpen] = useState(false);
+  const [endProjectLoading, setEndProjectLoading] = useState(false);
 
   // Inviting user id tracking
   const [invitingUserId, setInvitingUserId] = useState(null);
@@ -191,6 +196,23 @@ export default function ProjectsView({ currentUserId, showToast }) {
     }
   };
 
+  // End Project (Lead only)
+  const handleEndProject = async () => {
+    if (!selectedProjectId) return;
+    setEndProjectLoading(true);
+    try {
+      await projectApi.endProject(selectedProjectId);
+      showToast(`Project "${activeProject.title}" has been officially concluded and ended!`, 'success', 'Project Ended');
+      await loadSingleProject(selectedProjectId);
+      await loadProjectsData();
+      setIsEndProjectModalOpen(false);
+    } catch (err) {
+      showToast(err.message, 'error', 'Failed to End Project');
+    } finally {
+      setEndProjectLoading(false);
+    }
+  };
+
   // Subtask Actions (Owner only)
   const handleAddSubtask = async (subtaskData) => {
     if (!selectedProjectId || !subtaskDrawerMember) return;
@@ -282,6 +304,17 @@ export default function ProjectsView({ currentUserId, showToast }) {
               </button>
             )}
 
+            {isCurrentUserLead && activeProject.status !== 'ENDED' && (
+              <button
+                onClick={() => setIsEndProjectModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                title="Team Lead: Officially conclude and end this project"
+              >
+                <Flag className="w-3.5 h-3.5" />
+                <span>End Project</span>
+              </button>
+            )}
+
             <button
               onClick={() => loadSingleProject(selectedProjectId)}
               className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors"
@@ -291,6 +324,26 @@ export default function ProjectsView({ currentUserId, showToast }) {
             </button>
           </div>
         </div>
+
+        {/* Project Ended Banner (if finalized) */}
+        {activeProject.status === 'ENDED' && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-300 text-slate-800 text-xs flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                <Flag className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm">Project Concluded & Ended</p>
+                <p className="text-slate-500 mt-0.5">
+                  This project was officially finalized by Team Lead {activeProject.teamLeadName}.
+                </p>
+              </div>
+            </div>
+            <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-slate-200 text-slate-700 uppercase tracking-wider">
+              Project Finalized
+            </span>
+          </div>
+        )}
 
         {/* Tab Sub-Navigation */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-px">
@@ -442,6 +495,16 @@ export default function ProjectsView({ currentUserId, showToast }) {
           confirmText="Mark Milestone Completed"
           loading={overallTaskCompletingLoading}
         />
+
+        <ReconfirmationModal
+          isOpen={isEndProjectModalOpen}
+          onClose={() => setIsEndProjectModalOpen(false)}
+          onConfirm={handleEndProject}
+          title={`End Project "${activeProject?.title}"?`}
+          description="Are you sure you want to officially end this project? All milestones will be marked finalized and a broadcast notification will be sent to all enrolled team members."
+          confirmText="Confirm & End Project"
+          loading={endProjectLoading}
+        />
       </div>
     );
   }
@@ -588,16 +651,23 @@ export default function ProjectsView({ currentUserId, showToast }) {
                       <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <FolderKanban className="w-5 h-5 stroke-[2.2]" />
                       </div>
-                      {isLead ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>Team Lead</span>
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          Member
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                        {proj.status === 'ENDED' && (
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-300 uppercase">
+                            Ended
+                          </span>
+                        )}
+                        {isLead ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                            <ShieldCheck className="w-3 h-3" />
+                            <span>Team Lead</span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            Member
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <h4 className="text-base font-bold text-slate-900 mt-3 group-hover:text-indigo-600 transition-colors line-clamp-1">

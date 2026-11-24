@@ -65,6 +65,7 @@ export const projectApi = {
   getInvitations: () => apiClient.get('/api/projects/invitations'),
   getProject: (id) => apiClient.get(`/api/projects/${id}`),
   createProject: (data) => apiClient.post('/api/projects', data),
+  endProject: (projectId) => apiClient.post(`/api/projects/${projectId}/end`),
   inviteMember: (projectId, userId) => apiClient.post(`/api/projects/${projectId}/invite`, { userId }),
   acceptInvitation: (projectId) => apiClient.post(`/api/projects/${projectId}/accept`),
   rejectInvitation: (projectId) => apiClient.post(`/api/projects/${projectId}/reject`),
@@ -95,6 +96,7 @@ export const userApi = {
   getUsers: (query = '') => apiClient.get('/api/users', { params: query ? { query } : {} }),
   getCurrentUser: () => apiClient.get('/api/users/current'),
   getUserById: (id) => apiClient.get(`/api/users/${id}`),
+  updateProfile: (data) => apiClient.put('/api/users/profile', data),
 };
 
 export default apiClient;

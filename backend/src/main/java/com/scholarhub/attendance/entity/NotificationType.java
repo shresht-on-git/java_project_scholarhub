@@ -5,5 +5,6 @@ public enum NotificationType {
     TASK_COMPLETED,
     TASK_OVERDUE,
     SUBTASK_COMPLETED,
-    SUBTASK_OVERDUE
+    SUBTASK_OVERDUE,
+    PROJECT_ENDED
 }

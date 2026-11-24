@@ -22,6 +22,7 @@ public class ProjectMemberDto {
     private boolean overallTaskCompleted;
     private LocalDateTime joinedAt;
     private List<SubtaskDto> subtasks;
+    private String profilePhoto;
 
     public ProjectMemberDto() {}
 
@@ -29,6 +30,14 @@ public class ProjectMemberDto {
                             String branch, int semester, ProjectRole role, MemberStatus status,
                             String overallTask, LocalDate overallTaskDeadline, boolean overallTaskCompleted,
                             LocalDateTime joinedAt, List<SubtaskDto> subtasks) {
+        this(id, userId, fullName, rollNumber, email, branch, semester, role, status,
+                overallTask, overallTaskDeadline, overallTaskCompleted, joinedAt, subtasks, null);
+    }
+
+    public ProjectMemberDto(Long id, Long userId, String fullName, String rollNumber, String email,
+                            String branch, int semester, ProjectRole role, MemberStatus status,
+                            String overallTask, LocalDate overallTaskDeadline, boolean overallTaskCompleted,
+                            LocalDateTime joinedAt, List<SubtaskDto> subtasks, String profilePhoto) {
         this.id = id;
         this.userId = userId;
         this.fullName = fullName;
@@ -43,6 +52,7 @@ public class ProjectMemberDto {
         this.overallTaskCompleted = overallTaskCompleted;
         this.joinedAt = joinedAt;
         this.subtasks = subtasks;
+        this.profilePhoto = profilePhoto;
     }
 
     public Long getId() { return id; }
@@ -86,4 +96,7 @@ public class ProjectMemberDto {
 
     public List<SubtaskDto> getSubtasks() { return subtasks; }
     public void setSubtasks(List<SubtaskDto> subtasks) { this.subtasks = subtasks; }
+
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
 }

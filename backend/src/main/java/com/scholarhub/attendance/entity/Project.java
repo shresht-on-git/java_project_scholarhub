@@ -28,6 +28,12 @@ public class Project {
     @JoinColumn(name = "team_lead_id", nullable = false)
     private User teamLead;
 
+    @Column(name = "status", nullable = false)
+    private String status = "ACTIVE";
+
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -55,15 +61,22 @@ public class Project {
         private String description;
         private int teamSize;
         private User teamLead;
+        private String status = "ACTIVE";
+        private LocalDateTime endedAt;
 
         public Builder id(Long id) { this.id = id; return this; }
         public Builder title(String title) { this.title = title; return this; }
         public Builder description(String description) { this.description = description; return this; }
         public Builder teamSize(int teamSize) { this.teamSize = teamSize; return this; }
         public Builder teamLead(User teamLead) { this.teamLead = teamLead; return this; }
+        public Builder status(String status) { this.status = status; return this; }
+        public Builder endedAt(LocalDateTime endedAt) { this.endedAt = endedAt; return this; }
 
         public Project build() {
-            return new Project(id, title, description, teamSize, teamLead);
+            Project project = new Project(id, title, description, teamSize, teamLead);
+            if (status != null) project.setStatus(status);
+            project.setEndedAt(endedAt);
+            return project;
         }
     }
 
@@ -81,6 +94,12 @@ public class Project {
 
     public User getTeamLead() { return teamLead; }
     public void setTeamLead(User teamLead) { this.teamLead = teamLead; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getEndedAt() { return endedAt; }
+    public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

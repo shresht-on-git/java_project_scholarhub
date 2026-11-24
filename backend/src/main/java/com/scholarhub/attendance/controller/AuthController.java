@@ -56,7 +56,13 @@ public class AuthController {
                 user.getFullName(),
                 user.getEmail(),
                 user.getBranch(),
-                user.getSemester()
+                user.getSemester(),
+                user.getProfilePhoto(),
+                user.getPhoneNumber(),
+                user.getBio(),
+                user.getSkills(),
+                user.getGithubUrl(),
+                user.getLinkedinUrl()
         );
 
         String token = "sh_token_" + user.getId() + "_" + System.currentTimeMillis();
@@ -84,7 +90,13 @@ public class AuthController {
                         user.getFullName(),
                         user.getEmail(),
                         user.getBranch(),
-                        user.getSemester()
+                        user.getSemester(),
+                        user.getProfilePhoto(),
+                        user.getPhoneNumber(),
+                        user.getBio(),
+                        user.getSkills(),
+                        user.getGithubUrl(),
+                        user.getLinkedinUrl()
                 )))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }

@@ -11,6 +11,7 @@ export default function Header({
   loading,
   setMobileOpen,
   backendConnected,
+  onNavigateProfile,
 }) {
   const getHeaderMeta = () => {
     switch (activeTab) {
@@ -31,6 +32,12 @@ export default function Header({
           title: 'Notifications & Alerts',
           description:
             'Real-time updates on team milestones, overdue deadlines, and invitations.',
+        };
+      case 'profile':
+        return {
+          title: 'My Profile & Portfolio',
+          description:
+            'Manage personal details, profile photo, semester credentials, and project collaboration portfolio.',
         };
       case 'dashboard':
         return {
@@ -118,14 +125,22 @@ export default function Header({
           )}
 
           {/* Authenticated User Pill */}
-          <div className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200/80 bg-slate-50/80">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-              {(currentStudent?.fullName || 'ST')
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()}
+          <button
+            onClick={() => onNavigateProfile && onNavigateProfile()}
+            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 hover:bg-slate-100 transition-colors text-left"
+            title="Edit My Profile"
+          >
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden">
+              {currentStudent?.profilePhoto ? (
+                <img src={currentStudent.profilePhoto} alt={currentStudent.fullName} className="w-full h-full object-cover" />
+              ) : (
+                (currentStudent?.fullName || 'ST')
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
+              )}
             </div>
             <div className="hidden sm:block min-w-0">
               <div className="text-xs font-bold text-slate-900 truncate">
@@ -135,7 +150,7 @@ export default function Header({
                 {currentStudent?.rollNumber}
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Logout Button */}
           <button
