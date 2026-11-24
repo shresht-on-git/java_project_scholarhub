@@ -120,11 +120,11 @@ export default function MemberCard({
             {isCurrentUserLead && (
               <button
                 onClick={() => onOpenTaskModal(member)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 hover:underline"
-                title="Lead: Assign or edit member overall task"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors border border-indigo-200/80 shadow-2xs"
+                title="Team Lead: Assign or edit overall milestone and deadline"
               >
                 <Edit2 className="w-3 h-3" />
-                <span>{member.overallTask ? 'Edit' : 'Assign'}</span>
+                <span>{member.overallTask ? 'Edit Task & Deadline' : '+ Assign Task & Deadline'}</span>
               </button>
             )}
           </div>
@@ -135,7 +135,7 @@ export default function MemberCard({
             ) : (
               <span className="italic text-slate-400">
                 {isCurrentUserLead
-                  ? 'Click "Assign" to define overall milestone for this member.'
+                  ? 'Click "+ Assign Task & Deadline" above to set this member\'s overall responsibility.'
                   : 'Pending milestone assignment by Team Lead.'}
               </span>
             )}
@@ -154,21 +154,21 @@ export default function MemberCard({
               )}
             </div>
 
-            {/* Completion Status / Tick Button */}
+            {/* Completion Status / Complete Task Button */}
             <div>
               {member.overallTaskCompleted ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  <CheckCircle2 className="w-3 h-3 stroke-[2.5]" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Completed</span>
                 </span>
               ) : member.overallTask ? (
                 <button
                   onClick={() => onCompleteOverallTaskClick(member)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold transition-all shadow-xs"
-                  title="Mark overall task as completed (notifies team)"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs shadow-emerald-200"
+                  title="Mark overall task as completed (requires confirmation, notifies team)"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Complete</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.2]" />
+                  <span>Complete Task</span>
                 </button>
               ) : null}
             </div>

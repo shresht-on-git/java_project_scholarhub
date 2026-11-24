@@ -218,7 +218,11 @@ export default function ProjectsView({ currentUserId, showToast }) {
 
   // Single Project Workspace View
   if (selectedProjectId && activeProject) {
-    const isCurrentUserLead = activeProject.isCurrentUserLead;
+    const isCurrentUserLead = Boolean(
+      activeProject.isCurrentUserLead === true ||
+      activeProject.currentUserLead === true ||
+      (currentUserId && String(activeProject.teamLeadId) === String(currentUserId))
+    );
     const acceptedCount = activeProject.acceptedMembersCount || 0;
     const pendingCount = activeProject.pendingMembersCount || 0;
 
@@ -568,7 +572,11 @@ export default function ProjectsView({ currentUserId, showToast }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((proj) => {
-              const isLead = proj.isCurrentUserLead;
+              const isLead = Boolean(
+                proj.isCurrentUserLead === true ||
+                proj.currentUserLead === true ||
+                (currentUserId && String(proj.teamLeadId) === String(currentUserId))
+              );
               return (
                 <div
                   key={proj.id}
