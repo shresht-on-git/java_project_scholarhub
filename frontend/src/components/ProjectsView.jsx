@@ -255,7 +255,7 @@ export default function ProjectsView({ currentUserId, showToast }) {
           </div>
 
           {/* Quick Stats Pill */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100 text-xs font-bold text-indigo-700">
               <Users className="w-3.5 h-3.5" />
               <span>
@@ -267,6 +267,16 @@ export default function ProjectsView({ currentUserId, showToast }) {
                 </span>
               )}
             </div>
+
+            {isCurrentUserLead && (
+              <button
+                onClick={() => setProjectSubTab('invite')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-all shadow-2xs"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>+ Invite Members</span>
+              </button>
+            )}
 
             <button
               onClick={() => loadSingleProject(selectedProjectId)}
@@ -322,15 +332,25 @@ export default function ProjectsView({ currentUserId, showToast }) {
         {/* Sub-Tab 1: Member Profiles Grid */}
         {projectSubTab === 'profiles' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900">Enrolled Team Members</h3>
                 <p className="text-xs text-slate-500">
                   {isCurrentUserLead
-                    ? 'As Team Lead, assign overall milestones and review member subtask progressions.'
+                    ? 'As Team Lead, assign overall milestones, review member subtasks, or invite more students from the database.'
                     : 'Track responsibilities, check deadlines, and collaborate with your teammates.'}
                 </p>
               </div>
+
+              {isCurrentUserLead && (
+                <button
+                  onClick={() => setProjectSubTab('invite')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-all shadow-xs self-start sm:self-auto"
+                >
+                  <UserPlus className="w-4 h-4 stroke-[2.2]" />
+                  <span>+ Invite Member</span>
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -345,6 +365,29 @@ export default function ProjectsView({ currentUserId, showToast }) {
                   onOpenSubtasks={(m) => setSubtaskDrawerMember(m)}
                 />
               ))}
+
+              {/* Empty Slots for Team Lead to Invite Students */}
+              {isCurrentUserLead &&
+                Array.from({ length: Math.max(0, activeProject.teamSize - activeProject.members.length) }).map((_, idx) => (
+                  <div
+                    key={`empty-slot-${idx}`}
+                    onClick={() => setProjectSubTab('invite')}
+                    className="rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all group min-h-[220px]"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200 flex items-center justify-center transition-all shadow-2xs mb-3">
+                      <UserPlus className="w-6 h-6 stroke-[1.8]" />
+                    </div>
+                    <h5 className="text-sm font-bold text-slate-700 group-hover:text-indigo-900 transition-colors">
+                      Empty Team Slot
+                    </h5>
+                    <p className="text-xs text-slate-400 mt-1 max-w-[180px]">
+                      Search the student database and send an invitation.
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 group-hover:border-indigo-300 text-indigo-600 text-xs font-bold transition-all shadow-2xs">
+                      + Invite Student
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
