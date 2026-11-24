@@ -8,13 +8,17 @@ import MarkAttendanceModal from './components/MarkAttendanceModal';
 import PlaceholderView from './components/PlaceholderView';
 import ProjectsView from './components/ProjectsView';
 import NotificationsView from './components/NotificationsView';
+import LoginView from './components/LoginView';
 import Toast from './components/Toast';
-import { attendanceApi, notificationApi, userApi } from './api/axios';
+import { attendanceApi, notificationApi, userApi, authApi } from './api/axios';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
+
   const [summary, setSummary] = useState({
     overallPercentage: 0,
     academicTarget: 75.0,
@@ -24,14 +28,6 @@ export default function App() {
     totalSubjects: 0,
     overallStatus: 'NO_DATA',
     subjects: [],
-  });
-  const [currentStudent, setCurrentStudent] = useState({
-    id: 1,
-    fullName: 'Aarav Sharma',
-    rollNumber: '102403001',
-    email: 'aarav.sharma@scholarhub.edu',
-    branch: 'Computer Engineering',
-    semester: 5,
   });
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -60,7 +56,7 @@ export default function App() {
 
       const [summaryRes, studentRes, notifRes] = await Promise.allSettled([
         attendanceApi.getSummary(),
-        userApi.getCurrentUser(),
+        authApi.getCurrentUser(),
         notificationApi.getUnreadCount(),
       ]);
 
@@ -91,12 +87,31 @@ export default function App() {
     }
   }, []);
 
+  // Check saved session on mount
   useEffect(() => {
-    loadData(true);
+    const savedUserId = localStorage.getItem('scholarhub_user_id');
+    const savedUserJson = localStorage.getItem('scholarhub_user');
+
+    if (savedUserId && savedUserJson) {
+      try {
+        const user = JSON.parse(savedUserJson);
+        setCurrentStudent(user);
+        setIsAuthenticated(true);
+        loadData(true);
+        return;
+      } catch (e) {
+        console.warn('Corrupted saved user session:', e);
+      }
+    }
+
+    // Default: not authenticated, prompt login
+    setIsAuthenticated(false);
+    setLoading(false);
   }, [loadData]);
 
-  // Periodic unread count check every 10s
+  // Periodic unread notification count check
   useEffect(() => {
+    if (!isAuthenticated) return;
     const interval = setInterval(async () => {
       try {
         const res = await notificationApi.getUnreadCount();
@@ -106,14 +121,29 @@ export default function App() {
       }
     }, 10000);
     return () => clearInterval(interval);
-  }, [currentStudent?.id]);
+  }, [isAuthenticated, currentStudent?.id]);
 
-  // Handle switching active student persona
-  const handleSwitchUser = async (student) => {
-    localStorage.setItem('scholarhub_user_id', String(student.id));
-    setCurrentStudent(student);
-    showToast(`Switched active student to ${student.fullName} (${student.rollNumber})`, 'info', 'Persona Switched');
-    await loadData(false);
+  // Handle Login Success
+  const handleLoginSuccess = async (user) => {
+    setCurrentStudent(user);
+    setIsAuthenticated(true);
+    showToast(`Welcome back, ${user.fullName}!`, 'success', 'Signed In');
+    await loadData(true);
+  };
+
+  // Handle Logout
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // ignore network errors on logout
+    }
+    localStorage.removeItem('scholarhub_user_id');
+    localStorage.removeItem('scholarhub_user');
+    localStorage.removeItem('scholarhub_token');
+    setIsAuthenticated(false);
+    setCurrentStudent(null);
+    showToast('You have been signed out successfully.', 'info', 'Signed Out');
   };
 
   // Subject Actions
@@ -175,6 +205,16 @@ export default function App() {
     );
   };
 
+  // Render Login View if student is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        <LoginView onLoginSuccess={handleLoginSuccess} />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Toast Notification */}
@@ -190,6 +230,7 @@ export default function App() {
         setMobileOpen={setMobileOpen}
         currentStudent={currentStudent}
         unreadNotificationCount={unreadCount}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -197,7 +238,7 @@ export default function App() {
         <Header
           activeTab={activeTab}
           currentStudent={currentStudent}
-          onSwitchUser={handleSwitchUser}
+          onLogout={handleLogout}
           onAddSubject={handleOpenAddSubject}
           onMarkAttendance={() => setIsMarkModalOpen(true)}
           onRefresh={() => loadData(false)}

@@ -1,11 +1,10 @@
 import React from 'react';
-import { Plus, CheckSquare, Menu, RefreshCw, Radio } from 'lucide-react';
-import UserSwitcher from './UserSwitcher';
+import { Plus, CheckSquare, Menu, RefreshCw, Radio, LogOut } from 'lucide-react';
 
 export default function Header({
   activeTab,
   currentStudent,
-  onSwitchUser,
+  onLogout,
   onAddSubject,
   onMarkAttendance,
   onRefresh,
@@ -86,14 +85,8 @@ export default function Header({
           </div>
         </div>
 
-        {/* Right: Actions + User Switcher */}
+        {/* Right: Actions + Logged-in Profile + Logout */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Active User Switcher */}
-          <UserSwitcher
-            currentStudent={currentStudent}
-            onSwitchUser={onSwitchUser}
-          />
-
           {/* Tab Specific Quick Actions for Attendance */}
           {activeTab === 'attendance' && (
             <>
@@ -123,6 +116,36 @@ export default function Header({
               </button>
             </>
           )}
+
+          {/* Authenticated User Pill */}
+          <div className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200/80 bg-slate-50/80">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              {(currentStudent?.fullName || 'ST')
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+            <div className="hidden sm:block min-w-0">
+              <div className="text-xs font-bold text-slate-900 truncate">
+                {currentStudent?.fullName}
+              </div>
+              <div className="text-[10px] text-slate-500 font-mono">
+                {currentStudent?.rollNumber}
+              </div>
+            </div>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={onLogout}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold transition-all shadow-2xs"
+            title="Sign out of your account"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </div>
     </header>

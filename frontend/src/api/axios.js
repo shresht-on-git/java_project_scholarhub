@@ -13,8 +13,14 @@ const apiClient = axios.create({
 // Request interceptor: dynamically inject X-User-Id header from localStorage
 apiClient.interceptors.request.use(
   (config) => {
-    const currentUserId = localStorage.getItem('scholarhub_user_id') || '1';
-    config.headers['X-User-Id'] = currentUserId;
+    const currentUserId = localStorage.getItem('scholarhub_user_id');
+    if (currentUserId) {
+      config.headers['X-User-Id'] = currentUserId;
+    }
+    const token = localStorage.getItem('scholarhub_token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -32,6 +38,13 @@ apiClient.interceptors.response.use(
     return Promise.reject(new Error(message));
   }
 );
+
+// Auth Endpoints
+export const authApi = {
+  login: (credentials) => apiClient.post('/api/auth/login', credentials),
+  getCurrentUser: () => apiClient.get('/api/auth/me'),
+  logout: () => apiClient.post('/api/auth/logout'),
+};
 
 // Attendance, Subject & Student API Endpoints
 export const attendanceApi = {

@@ -9,7 +9,7 @@ import {
   Bell,
   Settings,
   X,
-  ChevronRight,
+  LogOut,
   Sparkles
 } from 'lucide-react';
 
@@ -22,11 +22,12 @@ export default function Sidebar({
   setMobileOpen,
   currentStudent,
   unreadNotificationCount = 0,
+  onLogout,
 }) {
-  const studentName = currentStudent?.fullName || 'Aarav Sharma';
-  const studentRoll = currentStudent?.rollNumber || '102403001';
-  const studentBranch = currentStudent?.branch || 'Computer Engineering';
-  const studentSem = currentStudent?.semester || 5;
+  const studentName = currentStudent?.fullName || 'Student';
+  const studentRoll = currentStudent?.rollNumber || '';
+  const studentBranch = currentStudent?.branch || '';
+  const studentSem = currentStudent?.semester || 1;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -160,27 +161,38 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Student Profile Footer */}
+        {/* Student Profile Footer with Logout */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100/70 transition-colors cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-white shadow-2xs">
-              {studentName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()}
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                {studentName
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate">{studentName}</p>
+                <p
+                  className="text-[10px] text-slate-500 font-mono truncate"
+                  title={`Roll: ${studentRoll} • ${studentBranch} (Sem ${studentSem})`}
+                >
+                  {studentRoll} • Sem {studentSem}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">{studentName}</p>
-              <p
-                className="text-xs text-slate-500 truncate"
-                title={`Roll: ${studentRoll} • ${studentBranch} (Sem ${studentSem})`}
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                title="Log Out"
               >
-                {studentRoll} • Sem {studentSem}
-              </p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </aside>

@@ -143,11 +143,16 @@ public class ProjectService {
             projectMemberRepository.save(newMember);
         }
 
-        // Push notification to invited user
+        // Push notification to invited user with project description
+        String inviteMsg = project.getTeamLead().getFullName() + " invited you to join '" + project.getTitle() + "'.";
+        if (project.getDescription() != null && !project.getDescription().isBlank()) {
+            inviteMsg += " Project Scope: " + project.getDescription();
+        }
+
         notificationService.createNotification(
                 userToInvite,
                 project,
-                project.getTeamLead().getFullName() + " invited you to join '" + project.getTitle() + "'.",
+                inviteMsg,
                 NotificationType.INVITATION
         );
 

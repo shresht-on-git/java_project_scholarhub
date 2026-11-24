@@ -439,35 +439,52 @@ export default function ProjectsView({ currentUserId, showToast }) {
             {invitations.map((inv) => (
               <div
                 key={inv.id}
-                className="p-4 rounded-xl bg-white border border-amber-200 shadow-2xs flex flex-col justify-between gap-3"
+                className="p-5 rounded-2xl bg-white border border-amber-200/90 shadow-sm flex flex-col justify-between gap-4"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-bold text-slate-900">{inv.title}</h4>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                      INVITATION
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 uppercase tracking-wider">
+                        Project Join Request
+                      </span>
+                      <h4 className="text-base font-bold text-slate-900 mt-1">{inv.title}</h4>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 shrink-0">
+                      {inv.acceptedMembersCount} / {inv.teamSize} Slots
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-1 line-clamp-2">{inv.description}</p>
-                  <p className="text-[11px] text-slate-400 mt-2">
-                    Team Lead: <strong className="text-slate-700">{inv.teamLeadName}</strong> ({inv.teamLeadRoll})
-                  </p>
+
+                  {/* Project Description by Team Lead */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 mt-2 space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Project Description by Team Lead
+                    </span>
+                    <p className="leading-relaxed whitespace-pre-wrap font-medium">
+                      {inv.description}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-3">
+                    <span>Invited by Team Lead:</span>
+                    <strong className="text-slate-800">{inv.teamLeadName}</strong>
+                    <span className="font-mono text-slate-400">({inv.teamLeadRoll})</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                   <button
                     onClick={() => handleRejectInvite(inv.id, inv.title)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition-colors"
                   >
                     <XCircle className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Decline</span>
+                    <span>Reject / Decline</span>
                   </button>
                   <button
                     onClick={() => handleAcceptInvite(inv.id, inv.title)}
-                    className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all shadow-xs"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Accept & Join</span>
+                    <span>Accept & Join Team</span>
                   </button>
                 </div>
               </div>
