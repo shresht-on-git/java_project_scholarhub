@@ -190,6 +190,15 @@ class ProjectCollaborationTest {
         // Team Lead attempt -> Success
         ProjectMemberDto updated = projectService.updateOverallTask(project.getId(), memberEntity.getId(), updateReq, lead.getId());
         assertEquals("Develop Sensor Integration", updated.getOverallTask());
+
+        // Team Lead CANNOT complete member's overall task -> 403 Forbidden
+        assertThrows(ForbiddenException.class, () ->
+                projectService.completeOverallTask(project.getId(), memberEntity.getId(), lead.getId())
+        );
+
+        // Member completes their own overall task -> Success
+        ProjectMemberDto completed = projectService.completeOverallTask(project.getId(), memberEntity.getId(), member.getId());
+        assertTrue(completed.isOverallTaskCompleted());
     }
 
     @Test

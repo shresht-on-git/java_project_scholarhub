@@ -239,6 +239,11 @@ public class ProjectService {
             throw new BadRequestException("Member does not belong to this project.");
         }
 
+        // Strict Individual Responsibility Check: ONLY the individual member themselves can complete their overall task
+        if (!member.getUser().getId().equals(currentUserId)) {
+            throw new ForbiddenException("Only the individual assigned member can mark their overall task as completed. Team leads and teammates cannot complete it on their behalf.");
+        }
+
         if (member.getOverallTask() == null || member.getOverallTask().isBlank()) {
             throw new BadRequestException("No overall task is assigned to this member.");
         }

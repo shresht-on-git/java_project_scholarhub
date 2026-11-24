@@ -154,22 +154,27 @@ export default function MemberCard({
               )}
             </div>
 
-            {/* Completion Status / Complete Task Button */}
+            {/* Completion Status / Complete Task Button (ONLY individual owner can complete their own task) */}
             <div>
               {member.overallTaskCompleted ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Completed</span>
                 </span>
-              ) : member.overallTask ? (
+              ) : member.overallTask && isOwner ? (
                 <button
                   onClick={() => onCompleteOverallTaskClick(member)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs shadow-emerald-200"
-                  title="Mark overall task as completed (requires confirmation, notifies team)"
+                  title="Mark your overall task as completed (requires confirmation, notifies team)"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.2]" />
                   <span>Complete Task</span>
                 </button>
+              ) : member.overallTask ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  <Clock className="w-3 h-3" />
+                  <span>In Progress</span>
+                </span>
               ) : null}
             </div>
           </div>
