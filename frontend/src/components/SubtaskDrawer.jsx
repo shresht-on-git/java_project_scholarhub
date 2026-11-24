@@ -34,6 +34,7 @@ export default function SubtaskDrawer({
 
   // Strict ownership check: only profile owner can add or complete their own subtasks
   const isOwner = String(currentUserId) === String(member.userId);
+  const hasOverallTask = Boolean(member.overallTask && member.overallTask.trim().length > 0);
 
   const subtasks = member.subtasks || [];
   const completedCount = subtasks.filter((s) => s.completed).length;
@@ -191,7 +192,9 @@ export default function SubtaskDrawer({
                   <p className="text-sm font-semibold text-slate-600">No subtasks created yet</p>
                   <p className="text-xs text-slate-400 mt-1">
                     {isOwner
-                      ? 'Break down your assigned responsibility into smaller actionable steps below.'
+                      ? (!hasOverallTask
+                          ? 'Assign an overall milestone first to unlock subtask creation.'
+                          : 'Break down your assigned responsibility into smaller actionable steps below.')
                       : `${member.fullName} has not added any subtasks yet.`}
                   </p>
                 </div>
@@ -284,8 +287,8 @@ export default function SubtaskDrawer({
               )}
             </div>
 
-            {/* Owner Only: Add Subtask Form */}
-            {isOwner && (
+            {/* Owner Only: Add Subtask Form or Locked Notification */}
+            {isOwner && hasOverallTask && (
               <form onSubmit={handleCreate} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center gap-2">
                   <Plus className="w-4 h-4 text-indigo-600" />
@@ -330,6 +333,20 @@ export default function SubtaskDrawer({
                   </div>
                 </div>
               </form>
+            )}
+
+            {isOwner && !hasOverallTask && (
+              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="font-bold text-amber-950">Subtask Creation Locked</h5>
+                  <p className="mt-1 leading-relaxed text-amber-800">
+                    {member.role === 'TEAM_LEAD'
+                      ? 'You must assign your overall milestone first before you can break it down into subtasks. Use "+ Assign Task & Deadline" on your card.'
+                      : 'You cannot create subtasks until the Team Lead assigns your overall task milestone.'}
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>

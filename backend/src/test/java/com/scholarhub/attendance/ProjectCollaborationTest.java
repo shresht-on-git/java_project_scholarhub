@@ -224,6 +224,17 @@ class ProjectCollaborationTest {
         subReq.setTitle("Implement AST node classes");
         subReq.setDeadline(LocalDate.now().plusDays(3));
 
+        // Rule 1: Member cannot create subtask until overall task is assigned -> BadRequestException
+        assertThrows(BadRequestException.class, () ->
+                projectService.addSubtask(project.getId(), memberEntity.getId(), subReq, member.getId())
+        );
+
+        // Team Lead assigns overall task to member
+        UpdateTaskRequest assignReq = new UpdateTaskRequest();
+        assignReq.setOverallTask("Front-end compiler AST");
+        assignReq.setOverallTaskDeadline(LocalDate.now().plusDays(10));
+        projectService.updateOverallTask(project.getId(), memberEntity.getId(), assignReq, lead.getId());
+
         // Lead cannot add subtask for member -> 403 Forbidden
         assertThrows(ForbiddenException.class, () ->
                 projectService.addSubtask(project.getId(), memberEntity.getId(), subReq, lead.getId())
@@ -234,6 +245,11 @@ class ProjectCollaborationTest {
         assertNotNull(subtask.getId());
         assertEquals("Implement AST node classes", subtask.getTitle());
 
+        // Rule 2: Member cannot complete overall task while subtasks are incomplete -> BadRequestException
+        assertThrows(BadRequestException.class, () ->
+                projectService.completeOverallTask(project.getId(), memberEntity.getId(), member.getId())
+        );
+
         // Lead cannot complete member's subtask -> 403 Forbidden
         assertThrows(ForbiddenException.class, () ->
                 projectService.completeSubtask(project.getId(), memberEntity.getId(), subtask.getId(), lead.getId())
@@ -242,6 +258,10 @@ class ProjectCollaborationTest {
         // Member completes own subtask -> Success
         SubtaskDto completed = projectService.completeSubtask(project.getId(), memberEntity.getId(), subtask.getId(), member.getId());
         assertTrue(completed.isCompleted());
+
+        // Now that all subtasks are finished, member can complete overall task -> Success
+        ProjectMemberDto completedMember = projectService.completeOverallTask(project.getId(), memberEntity.getId(), member.getId());
+        assertTrue(completedMember.isOverallTaskCompleted());
     }
 
     @Test

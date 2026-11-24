@@ -21,6 +21,7 @@ export default function MemberCard({
   const isOwner = String(currentUserId) === String(member.userId);
   const subtasks = member.subtasks || [];
   const completedSubtasks = subtasks.filter((s) => s.completed).length;
+  const hasIncompleteSubtasks = subtasks.some((s) => !s.completed);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'No deadline set';
@@ -162,14 +163,30 @@ export default function MemberCard({
                   <span>Completed</span>
                 </span>
               ) : member.overallTask && isOwner ? (
-                <button
-                  onClick={() => onCompleteOverallTaskClick(member)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs shadow-emerald-200"
-                  title="Mark your overall task as completed (requires confirmation, notifies team)"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.2]" />
-                  <span>Complete Task</span>
-                </button>
+                <div className="flex flex-col items-end">
+                  <button
+                    disabled={hasIncompleteSubtasks}
+                    onClick={() => onCompleteOverallTaskClick(member)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      hasIncompleteSubtasks
+                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                        : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs shadow-emerald-200 cursor-pointer'
+                    }`}
+                    title={
+                      hasIncompleteSubtasks
+                        ? `All subtasks must be completed before marking overall task as completed (${completedSubtasks}/${subtasks.length} finished)`
+                        : 'Mark your overall task as completed (requires confirmation, notifies team)'
+                    }
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.2]" />
+                    <span>Complete Task</span>
+                  </button>
+                  {hasIncompleteSubtasks && (
+                    <span className="text-[10px] text-amber-600 font-medium mt-1">
+                      {subtasks.length - completedSubtasks} subtask(s) remaining
+                    </span>
+                  )}
+                </div>
               ) : member.overallTask ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
                   <Clock className="w-3 h-3" />

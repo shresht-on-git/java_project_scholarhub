@@ -248,6 +248,13 @@ public class ProjectService {
             throw new BadRequestException("No overall task is assigned to this member.");
         }
 
+        // Rule 2: No one can submit/complete the task until all subtasks are completed
+        List<Subtask> subtasks = subtaskRepository.findByProjectMemberIdOrderByCreatedAtAsc(memberId);
+        boolean hasIncompleteSubtasks = subtasks.stream().anyMatch(s -> !s.isCompleted());
+        if (hasIncompleteSubtasks) {
+            throw new BadRequestException("Cannot complete overall task until all subtasks have been finished.");
+        }
+
         member.setOverallTaskCompleted(true);
         ProjectMember saved = projectMemberRepository.save(member);
 
@@ -277,6 +284,11 @@ public class ProjectService {
 
         if (member.getStatus() != MemberStatus.ACCEPTED) {
             throw new BadRequestException("Cannot create subtasks for a member who has not accepted the project invitation.");
+        }
+
+        // Rule 1: No one can create a subtask until an overall task is assigned
+        if (member.getOverallTask() == null || member.getOverallTask().trim().isEmpty()) {
+            throw new BadRequestException("Cannot create subtasks until an overall task has been assigned.");
         }
 
         Subtask subtask = Subtask.builder()
