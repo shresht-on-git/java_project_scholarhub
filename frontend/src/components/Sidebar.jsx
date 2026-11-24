@@ -19,8 +19,14 @@ export default function Sidebar({
   overallPercentage,
   overallStatus,
   mobileOpen,
-  setMobileOpen
+  setMobileOpen,
+  currentStudent
 }) {
+  const studentName = currentStudent?.fullName || 'Aarav Sharma';
+  const studentRoll = currentStudent?.rollNumber || '102403001';
+  const studentBranch = currentStudent?.branch || 'Computer Engineering';
+  const studentSem = currentStudent?.semester || 5;
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     {
@@ -143,15 +149,17 @@ export default function Sidebar({
           <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100/70 transition-colors cursor-pointer">
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150"
                 alt="Student Profile"
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">Alex Mercer</p>
-              <p className="text-xs text-slate-500 truncate">B.Tech CS • 5th Sem</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">{studentName}</p>
+              <p className="text-xs text-slate-500 truncate" title={`Roll: ${studentRoll} • ${studentBranch} (Sem ${studentSem})`}>
+                Roll: {studentRoll} • Sem {studentSem}
+              </p>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </div>

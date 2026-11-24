@@ -23,6 +23,13 @@ export default function App() {
     overallStatus: 'NO_DATA',
     subjects: []
   });
+  const [currentStudent, setCurrentStudent] = useState({
+    fullName: 'Aarav Sharma',
+    rollNumber: '102403001',
+    email: 'aarav.sharma@scholarhub.edu',
+    branch: 'Computer Engineering',
+    semester: 5
+  });
   const [loading, setLoading] = useState(true);
   const [backendConnected, setBackendConnected] = useState(false);
   const [errorBanner, setErrorBanner] = useState('');
@@ -47,9 +54,21 @@ export default function App() {
       if (isInitial) setLoading(true);
       setErrorBanner('');
 
-      const res = await attendanceApi.getSummary();
-      setSummary(res.data);
-      setBackendConnected(true);
+      const [summaryRes, studentRes] = await Promise.allSettled([
+        attendanceApi.getSummary(),
+        attendanceApi.getCurrentStudent()
+      ]);
+
+      if (summaryRes.status === 'fulfilled') {
+        setSummary(summaryRes.value.data);
+        setBackendConnected(true);
+      } else {
+        throw summaryRes.reason;
+      }
+
+      if (studentRes.status === 'fulfilled') {
+        setCurrentStudent(studentRes.value.data);
+      }
     } catch (err) {
       console.warn('API error fetching attendance summary:', err);
       setBackendConnected(false);
@@ -139,6 +158,7 @@ export default function App() {
         overallStatus={summary.overallStatus}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
+        currentStudent={currentStudent}
       />
 
       {/* Main Content Area */}
@@ -204,6 +224,7 @@ export default function App() {
             <PlaceholderView
               tabId={activeTab}
               onGoToAttendance={() => setActiveTab('attendance')}
+              currentStudent={currentStudent}
             />
           )}
         </main>

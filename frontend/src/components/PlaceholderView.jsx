@@ -11,7 +11,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-export default function PlaceholderView({ tabId, onGoToAttendance }) {
+export default function PlaceholderView({ tabId, onGoToAttendance, currentStudent }) {
+  const rollNumber = currentStudent?.rollNumber || '102403001';
+  const studentName = currentStudent?.fullName || 'Aarav Sharma';
+
   const configs = {
     dashboard: {
       title: 'Academic Performance Overview',
@@ -47,7 +50,7 @@ export default function PlaceholderView({ tabId, onGoToAttendance }) {
       title: 'Student Profile & Preferences',
       subtitle: 'Notification thresholds, academic target configuration, and export data.',
       icon: Settings,
-      badge: 'User ID #8842',
+      badge: `Student: ${studentName} (Roll #${rollNumber})`,
     },
   };
 

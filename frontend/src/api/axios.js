@@ -23,7 +23,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Attendance & Subject API Endpoints
+// Attendance, Subject & Student API Endpoints
 export const attendanceApi = {
   getSummary: () => apiClient.get('/api/attendance/summary'),
   bulkMark: (data) => apiClient.post('/api/attendance/mark', data),
@@ -32,6 +32,8 @@ export const attendanceApi = {
   deleteSubject: (id) => apiClient.delete(`/api/subjects/${id}`),
   increment: (id, type) => apiClient.patch(`/api/subjects/${id}/increment`, { type }),
   checkHealth: () => apiClient.get('/api/health'),
+  getStudents: () => apiClient.get('/api/students'),
+  getCurrentStudent: () => apiClient.get('/api/students/current'),
 };
 
 export default apiClient;
