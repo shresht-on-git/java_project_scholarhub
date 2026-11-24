@@ -20,7 +20,8 @@ export default function Sidebar({
   overallStatus,
   mobileOpen,
   setMobileOpen,
-  currentStudent
+  currentStudent,
+  unreadNotificationCount = 0,
 }) {
   const studentName = currentStudent?.fullName || 'Aarav Sharma';
   const studentRoll = currentStudent?.rollNumber || '102403001';
@@ -34,12 +35,23 @@ export default function Sidebar({
       label: 'Attendance',
       icon: CalendarCheck2,
       badge: `${overallPercentage}%`,
-      badgeType: overallStatus === 'Safe' ? 'safe' : overallStatus === 'NO_DATA' ? 'neutral' : 'danger'
+      badgeType:
+        overallStatus === 'Safe'
+          ? 'safe'
+          : overallStatus === 'NO_DATA'
+          ? 'neutral'
+          : 'danger',
     },
     { id: 'tasks', label: 'Tasks', icon: ListTodo, badge: '4', badgeType: 'neutral' },
     { id: 'projects', label: 'Projects', icon: FolderKanban },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: '2', badgeType: 'alert' },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      badge: unreadNotificationCount > 0 ? String(unreadNotificationCount) : null,
+      badgeType: 'alert',
+    },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -68,7 +80,9 @@ export default function Sidebar({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-slate-900 text-lg tracking-tight">ScholarHub</span>
-                <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100/60 uppercase">PRO</span>
+                <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100/60 uppercase">
+                  PRO
+                </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">Academic Suite</p>
             </div>
@@ -120,7 +134,7 @@ export default function Sidebar({
                         : item.badgeType === 'danger'
                         ? 'bg-rose-50 text-rose-700 border border-rose-200/60'
                         : item.badgeType === 'alert'
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                        ? 'bg-rose-500 text-white font-bold'
                         : 'bg-slate-100 text-slate-600'
                     }`}
                   >
@@ -136,7 +150,9 @@ export default function Sidebar({
             <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/20 rounded-full blur-xl pointer-events-none" />
             <div className="flex items-center gap-2 mb-1.5">
               <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
-              <span className="text-[11px] font-semibold text-indigo-200 tracking-wide uppercase">University Target</span>
+              <span className="text-[11px] font-semibold text-indigo-200 tracking-wide uppercase">
+                University Target
+              </span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
               Minimum <strong className="text-white">75% attendance</strong> is required to qualify for end-semester exams.
@@ -147,18 +163,21 @@ export default function Sidebar({
         {/* Student Profile Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100/70 transition-colors cursor-pointer">
-            <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150"
-                alt="Student Profile"
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-xs"
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
+            <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-white shadow-2xs">
+              {studentName
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 truncate">{studentName}</p>
-              <p className="text-xs text-slate-500 truncate" title={`Roll: ${studentRoll} • ${studentBranch} (Sem ${studentSem})`}>
-                Roll: {studentRoll} • Sem {studentSem}
+              <p
+                className="text-xs text-slate-500 truncate"
+                title={`Roll: ${studentRoll} • ${studentBranch} (Sem ${studentSem})`}
+              >
+                {studentRoll} • Sem {studentSem}
               </p>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />

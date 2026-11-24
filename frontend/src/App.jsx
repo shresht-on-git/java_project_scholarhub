@@ -6,8 +6,10 @@ import SubjectGrid from './components/SubjectGrid';
 import AddEditSubjectModal from './components/AddEditSubjectModal';
 import MarkAttendanceModal from './components/MarkAttendanceModal';
 import PlaceholderView from './components/PlaceholderView';
+import ProjectsView from './components/ProjectsView';
+import NotificationsView from './components/NotificationsView';
 import Toast from './components/Toast';
-import { attendanceApi } from './api/axios';
+import { attendanceApi, notificationApi, userApi } from './api/axios';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -21,15 +23,17 @@ export default function App() {
     totalClasses: 0,
     totalSubjects: 0,
     overallStatus: 'NO_DATA',
-    subjects: []
+    subjects: [],
   });
   const [currentStudent, setCurrentStudent] = useState({
+    id: 1,
     fullName: 'Aarav Sharma',
     rollNumber: '102403001',
     email: 'aarav.sharma@scholarhub.edu',
     branch: 'Computer Engineering',
-    semester: 5
+    semester: 5,
   });
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [backendConnected, setBackendConnected] = useState(false);
   const [errorBanner, setErrorBanner] = useState('');
@@ -54,9 +58,10 @@ export default function App() {
       if (isInitial) setLoading(true);
       setErrorBanner('');
 
-      const [summaryRes, studentRes] = await Promise.allSettled([
+      const [summaryRes, studentRes, notifRes] = await Promise.allSettled([
         attendanceApi.getSummary(),
-        attendanceApi.getCurrentStudent()
+        userApi.getCurrentUser(),
+        notificationApi.getUnreadCount(),
       ]);
 
       if (summaryRes.status === 'fulfilled') {
@@ -69,13 +74,17 @@ export default function App() {
       if (studentRes.status === 'fulfilled') {
         setCurrentStudent(studentRes.value.data);
       }
+
+      if (notifRes.status === 'fulfilled') {
+        setUnreadCount(notifRes.value.data?.unreadCount || 0);
+      }
     } catch (err) {
-      console.warn('API error fetching attendance summary:', err);
+      console.warn('API error fetching summary:', err);
       setBackendConnected(false);
       setErrorBanner(
         'Unable to communicate with the Spring Boot backend server on ' +
-        (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') +
-        '. Please ensure the backend application is running.'
+          (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') +
+          '. Please ensure the backend application is running.'
       );
     } finally {
       setLoading(false);
@@ -85,6 +94,27 @@ export default function App() {
   useEffect(() => {
     loadData(true);
   }, [loadData]);
+
+  // Periodic unread count check every 10s
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await notificationApi.getUnreadCount();
+        setUnreadCount(res.data?.unreadCount || 0);
+      } catch {
+        // silence background notification poll errors
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [currentStudent?.id]);
+
+  // Handle switching active student persona
+  const handleSwitchUser = async (student) => {
+    localStorage.setItem('scholarhub_user_id', String(student.id));
+    setCurrentStudent(student);
+    showToast(`Switched active student to ${student.fullName} (${student.rollNumber})`, 'info', 'Persona Switched');
+    await loadData(false);
+  };
 
   // Subject Actions
   const handleOpenAddSubject = () => {
@@ -112,7 +142,7 @@ export default function App() {
     if (window.confirm(`Are you sure you want to delete "${name}"? All associated attendance logs will also be removed.`)) {
       try {
         await attendanceApi.deleteSubject(id);
-        showToast(`Subject deleted successfully.`, 'success', 'Deleted');
+        showToast('Subject deleted successfully.', 'success', 'Deleted');
         await loadData();
       } catch (err) {
         showToast(err.message, 'error', 'Delete Failed');
@@ -159,11 +189,15 @@ export default function App() {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         currentStudent={currentStudent}
+        unreadNotificationCount={unreadCount}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
+          activeTab={activeTab}
+          currentStudent={currentStudent}
+          onSwitchUser={handleSwitchUser}
           onAddSubject={handleOpenAddSubject}
           onMarkAttendance={() => setIsMarkModalOpen(true)}
           onRefresh={() => loadData(false)}
@@ -175,7 +209,7 @@ export default function App() {
         <main className="p-6 md:p-8 space-y-6 max-w-7xl w-full mx-auto flex-1">
           {/* Connection Error Banner if Backend is offline */}
           {errorBanner && (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center gap-2.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>{errorBanner}</span>
@@ -190,7 +224,8 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'attendance' ? (
+          {/* TAB 1: Attendance Module */}
+          {activeTab === 'attendance' && (
             <>
               {/* KPI Stat Cards */}
               <KpiRow summary={summary} />
@@ -220,13 +255,35 @@ export default function App() {
                 />
               </section>
             </>
-          ) : (
-            <PlaceholderView
-              tabId={activeTab}
-              onGoToAttendance={() => setActiveTab('attendance')}
-              currentStudent={currentStudent}
+          )}
+
+          {/* TAB 2: Projects & Team Collaboration Module */}
+          {activeTab === 'projects' && (
+            <ProjectsView
+              currentUserId={currentStudent?.id || 1}
+              showToast={showToast}
             />
           )}
+
+          {/* TAB 3: Notifications & Activity Module */}
+          {activeTab === 'notifications' && (
+            <NotificationsView
+              currentUserId={currentStudent?.id || 1}
+              showToast={showToast}
+              onNavigateToProjects={() => setActiveTab('projects')}
+            />
+          )}
+
+          {/* Other Tabs */}
+          {activeTab !== 'attendance' &&
+            activeTab !== 'projects' &&
+            activeTab !== 'notifications' && (
+              <PlaceholderView
+                tabId={activeTab}
+                onGoToAttendance={() => setActiveTab('attendance')}
+                currentStudent={currentStudent}
+              />
+            )}
         </main>
       </div>
 

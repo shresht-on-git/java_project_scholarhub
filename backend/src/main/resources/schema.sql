@@ -3,14 +3,20 @@
 CREATE DATABASE IF NOT EXISTS scholarhub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE scholarhub;
 
--- Optional manual flush / reset commands (run only when you need a full clean reset):
--- SET FOREIGN_KEY_CHECKS = 0;
--- DROP TABLE IF EXISTS attendance_logs;
--- DROP TABLE IF EXISTS subjects;
--- DROP TABLE IF EXISTS students;
--- SET FOREIGN_KEY_CHECKS = 1;
+-- Table: users
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    roll_number VARCHAR(50) NOT NULL UNIQUE,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    branch VARCHAR(255) NOT NULL,
+    semester INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table: students
+-- Table: students (for backward compatibility)
 CREATE TABLE IF NOT EXISTS students (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     roll_number VARCHAR(50) NOT NULL UNIQUE,
@@ -51,8 +57,84 @@ CREATE TABLE IF NOT EXISTS attendance_logs (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Seed 30 Students (Idempotent: inserts only if roll_number does not exist)
-INSERT INTO students (roll_number, full_name, email, password, branch, semester)
+-- Table: projects
+CREATE TABLE IF NOT EXISTS projects (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    team_size INT NOT NULL,
+    team_lead_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_team_lead
+        FOREIGN KEY (team_lead_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: project_members
+CREATE TABLE IF NOT EXISTS project_members (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role ENUM('TEAM_LEAD', 'MEMBER') NOT NULL DEFAULT 'MEMBER',
+    status ENUM('PENDING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    overall_task VARCHAR(255),
+    overall_task_deadline DATE,
+    overall_task_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    overdue_notified BOOLEAN NOT NULL DEFAULT FALSE,
+    joined_at TIMESTAMP NULL,
+    CONSTRAINT uk_project_member UNIQUE (project_id, user_id),
+    CONSTRAINT fk_member_project
+        FOREIGN KEY (project_id) REFERENCES projects(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_member_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: subtasks
+CREATE TABLE IF NOT EXISTS subtasks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_member_id BIGINT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    deadline DATE NOT NULL,
+    completed BOOLEAN NOT NULL DEFAULT FALSE,
+    overdue_notified BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_subtask_member
+        FOREIGN KEY (project_member_id) REFERENCES project_members(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: project_messages
+CREATE TABLE IF NOT EXISTS project_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_message_project
+        FOREIGN KEY (project_id) REFERENCES projects(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_message_sender
+        FOREIGN KEY (sender_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: notifications
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    recipient_id BIGINT NOT NULL,
+    project_id BIGINT,
+    message TEXT NOT NULL,
+    type ENUM('INVITATION', 'TASK_COMPLETED', 'TASK_OVERDUE', 'SUBTASK_COMPLETED', 'SUBTASK_OVERDUE') NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_recipient
+        FOREIGN KEY (recipient_id) REFERENCES users(id),
+    CONSTRAINT fk_notification_project
+        FOREIGN KEY (project_id) REFERENCES projects(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed 30 Students into users table (Idempotent)
+INSERT INTO users (roll_number, full_name, email, password, branch, semester)
 SELECT * FROM (
     SELECT '102403001' AS r, 'Aarav Sharma' AS n, 'aarav.sharma@scholarhub.edu' AS e, 'password123' AS p, 'Computer Engineering' AS b, 5 AS s UNION ALL
     SELECT '102403002', 'Ananya Verma', 'ananya.verma@scholarhub.edu', 'password123', 'Computer Engineering', 5 UNION ALL
@@ -85,7 +167,7 @@ SELECT * FROM (
     SELECT '102403029', 'Gaurav Saini', 'gaurav.saini@scholarhub.edu', 'password123', 'Computer Science', 5 UNION ALL
     SELECT '102403030', 'Nandini Arora', 'nandini.arora@scholarhub.edu', 'password123', 'Computer Engineering', 5
 ) AS tmp
-WHERE NOT EXISTS (SELECT 1 FROM students WHERE students.roll_number = tmp.r);
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE users.roll_number = tmp.r);
 
 -- Initial Subject Data (if subjects table is empty)
 INSERT INTO subjects (course_code, name, location, total_classes, attended_classes, missed_classes)
