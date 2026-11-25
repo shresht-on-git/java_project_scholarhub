@@ -98,6 +98,11 @@ export default function MemberCard({
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Team Lead</span>
               </span>
+            ) : member.status === 'PENDING' ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span>Invite Pending</span>
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                 <UserCheck className="w-3.5 h-3.5" />

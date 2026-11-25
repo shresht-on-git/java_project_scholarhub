@@ -42,6 +42,7 @@ apiClient.interceptors.response.use(
 // Auth Endpoints
 export const authApi = {
   login: (credentials) => apiClient.post('/api/auth/login', credentials),
+  register: (studentData) => apiClient.post('/api/auth/register', studentData),
   getCurrentUser: () => apiClient.get('/api/auth/me'),
   logout: () => apiClient.post('/api/auth/logout'),
 };

@@ -164,6 +164,11 @@ public class ProjectService {
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("No invitation found for this project."));
 
+        if (member.getStatus() == MemberStatus.ACCEPTED) {
+            // Idempotent: already accepted, return project details cleanly
+            return getProjectDetails(projectId, currentUserId);
+        }
+
         if (member.getStatus() != MemberStatus.PENDING) {
             throw new BadRequestException("Invitation is not in PENDING state (Current status: " + member.getStatus() + ").");
         }
@@ -171,6 +176,13 @@ public class ProjectService {
         member.setStatus(MemberStatus.ACCEPTED);
         member.setJoinedAt(LocalDateTime.now());
         projectMemberRepository.save(member);
+
+        // Mark any pending INVITATION notification for this user & project as read
+        notificationService.markInvitationsAsRead(currentUserId, projectId);
+
+        // Notify all accepted members that a new teammate joined
+        String joinMsg = member.getUser().getFullName() + " accepted the invitation and joined the project team.";
+        notificationService.notifyAllAcceptedMembers(member.getProject(), joinMsg, NotificationType.INVITATION);
 
         return getProjectDetails(projectId, currentUserId);
     }
@@ -180,12 +192,19 @@ public class ProjectService {
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("No invitation found for this project."));
 
+        if (member.getStatus() == MemberStatus.REJECTED) {
+            return;
+        }
+
         if (member.getStatus() != MemberStatus.PENDING) {
             throw new BadRequestException("Invitation is not in PENDING state (Current status: " + member.getStatus() + ").");
         }
 
         member.setStatus(MemberStatus.REJECTED);
         projectMemberRepository.save(member);
+
+        // Mark any pending INVITATION notification for this user & project as read
+        notificationService.markInvitationsAsRead(currentUserId, projectId);
     }
 
     @Transactional

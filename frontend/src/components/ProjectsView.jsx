@@ -123,23 +123,36 @@ export default function ProjectsView({ currentUserId, showToast }) {
   // Accept Invitation
   const handleAcceptInvite = async (projectId, projectTitle) => {
     try {
-      await projectApi.acceptInvitation(projectId);
+      // Optimistically remove from pending invitations immediately
+      setInvitations((prev) => prev.filter((inv) => inv.id !== projectId));
+      const res = await projectApi.acceptInvitation(projectId);
       showToast(`Accepted invitation to join "${projectTitle}".`, 'success', 'Welcome Aboard');
-      await loadProjectsData();
+      if (res.data) {
+        setProjects((prev) => {
+          const exists = prev.some((p) => p.id === res.data.id);
+          return exists ? prev.map((p) => (p.id === res.data.id ? res.data : p)) : [res.data, ...prev];
+        });
+        setActiveProject(res.data);
+      }
       setSelectedProjectId(projectId);
+      await loadProjectsData();
     } catch (err) {
       showToast(err.message, 'error', 'Accept Failed');
+      await loadProjectsData();
     }
   };
 
   // Reject Invitation
   const handleRejectInvite = async (projectId, projectTitle) => {
     try {
+      // Optimistically remove from pending invitations immediately
+      setInvitations((prev) => prev.filter((inv) => inv.id !== projectId));
       await projectApi.rejectInvitation(projectId);
       showToast(`Declined invitation for "${projectTitle}".`, 'info', 'Declined');
       await loadProjectsData();
     } catch (err) {
       showToast(err.message, 'error', 'Reject Failed');
+      await loadProjectsData();
     }
   };
 

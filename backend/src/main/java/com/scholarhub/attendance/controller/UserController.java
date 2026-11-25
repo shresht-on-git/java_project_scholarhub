@@ -44,9 +44,27 @@ public class UserController {
         return ResponseEntity.ok(dtos);
     }
 
+    private Long resolveUser(Long xUserId, String authHeader) {
+        if (xUserId != null) {
+            return xUserId;
+        }
+        if (authHeader != null && authHeader.startsWith("Bearer sh_token_")) {
+            try {
+                String tokenPart = authHeader.substring("Bearer sh_token_".length());
+                String[] parts = tokenPart.split("_");
+                if (parts.length > 0) {
+                    return Long.parseLong(parts[0]);
+                }
+            } catch (Exception ignored) {}
+        }
+        return 1L;
+    }
+
     @GetMapping("/current")
     public ResponseEntity<StudentDto> getCurrentUser(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long currentUserId) {
+            @RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Long currentUserId = resolveUser(xUserId, authHeader);
         User user = userRepository.findById(currentUserId)
                 .or(() -> userRepository.findByRollNumber("102403001"))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + currentUserId));
@@ -64,7 +82,9 @@ public class UserController {
     @Transactional
     public ResponseEntity<StudentDto> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long currentUserId) {
+            @RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Long currentUserId = resolveUser(xUserId, authHeader);
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + currentUserId));
 

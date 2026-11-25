@@ -74,6 +74,20 @@ public class NotificationService {
         notificationRepository.markAllAsReadByRecipientId(userId);
     }
 
+    @Transactional
+    public void markInvitationsAsRead(Long userId, Long projectId) {
+        List<Notification> notifs = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId);
+        for (Notification n : notifs) {
+            if (n.getType() == NotificationType.INVITATION
+                    && n.getProject() != null
+                    && n.getProject().getId().equals(projectId)
+                    && !n.isRead()) {
+                n.setRead(true);
+                notificationRepository.save(n);
+            }
+        }
+    }
+
     public NotificationDto mapToDto(Notification n) {
         return new NotificationDto(
                 n.getId(),

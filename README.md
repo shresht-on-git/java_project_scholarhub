@@ -120,6 +120,7 @@ scholarhub/
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/auth/login` | Authenticate with roll number/email and password; returns token and user payload |
+| `POST` | `/api/auth/register` | Register a new student account (roll number, email, branch, semester, password) |
 | `GET` | `/api/auth/me` | Retrieve currently authenticated user session details |
 | `POST` | `/api/auth/logout` | Invalidate current session token |
 
